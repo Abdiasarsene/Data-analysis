@@ -1,0 +1,8 @@
+# ignorer les fichiers de grandes tailles 
+*.sqlite
+*.sqlite3
+
+# Ignore les répétoires suivants
+node_modules/Analyses des données
+/Figures/
+/Documents/
