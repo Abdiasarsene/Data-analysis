@@ -136,3 +136,36 @@ plt.ylabel('Taux de vrais positifs (TPR)')
 plt.title('Receiver Operating Characteristic (ROC)')
 plt.legend(loc="lower right")
 plt.show()
+
+# visualisation le nombre d'observation
+arthro = execptData['Arthrose_code'].value_counts()
+print(arthro)
+
+# Étape 1: Importation des bibliothèques
+from pycaret.classification import *
+import pandas as pd
+
+# Étape 2: Chargement des données
+data = pd.read_csv('your_dataset.csv')
+
+# Étape 3: Initialisation de l'environnement PyCaret
+clf_setup = setup(data=execptData, target='your_target_column')
+
+# Étape 4: Comparaison des modèles
+best_model = compare_models()
+
+# Étape 5: Création et entraînement du modèle
+model = create_model('rf')  # Utilisation d'un Random Forest
+
+# Étape 6: Évaluation du modèle
+evaluate_model(model)
+
+# Étape 7: Optimisation des hyperparamètres
+tuned_model = tune_model(model)
+
+# Étape 8: Prévision sur de nouvelles données
+new_data = pd.read_csv('new_data.csv')
+predictions = predict_model(tuned_model, data=new_data)
+
+# Étape 9: Enregistrement du modèle
+save_model(tuned_model, 'final_model')
