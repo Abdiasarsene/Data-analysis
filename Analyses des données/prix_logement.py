@@ -21,6 +21,10 @@ import xgboost as xgb
 # importation de la base de données
 prixlogement=pd.read_excel(r'c:\Users\ARMIDE Informatique\Downloads\donne_immobilier.xlsx')
 
+
+"PREMIERE VERIFICATION APRES IMPORTATION DE LA BASE DE DONNE"
+
+
 # affichier les  cinq premières et dernières lignes de la base de données 
 prixlogement.head()
 prixlogement.tail()
@@ -29,48 +33,42 @@ msno.bar(prixlogement, color='red') #afficher le nombre d'observations de chaque
 check_duplicated = prixlogement.duplicated().sum()
 check_duplicated# afficher les doublons
 
+
+"DETECTION DES VALEURS ABERRANTES AVEC LA METHODE IQR"
+
+
 #vérifier la présence des outliers
 Q1 = prixlogement.quantile(0.25)
 Q3 = prixlogement.quantile(0.75)
 IQR = Q3 - Q1
+
+# Détecter les valeurs aberrantes
+outliers = ((prixlogement < (Q1 - 1.5 * IQR)) | (prixlogement > (Q3 + 1.5 * IQR)))
+outliers_data = prixlogement[outliers.any(axis=1)]
 
 # Afficher Q1, Q3, et IQR
 print(f"Q1:\n{Q1}\n")
 print(f"Q3:\n{Q3}\n")
 print(f"IQR:\n{IQR}\n")
 
-# Détecter les valeurs aberrantes
-outliers = ((prixlogement < (Q1 - 1.5 * IQR)) | (prixlogement > (Q3 + 1.5 * IQR)))
-print(outliers)
-
 # Afficher les valeurs aberrantes
-outliers_data = prixlogement[outliers.any(axis=1)]
 print(outliers_data)
-
-# Calculer les seuils
-lower_bound = Q1 - 1.5 * IQR
-upper_bound = Q3 + 1.5 * IQR
-
-# Afficher les seuils
-print(f"Seuil inférieur:\n{lower_bound}\n")
-print(f"Seuil supérieur:\n{upper_bound}\n")
-
-# Vérifier les valeurs aberrantes
-outliers = ((prixlogement < lower_bound) | (prixlogement > upper_bound))
-
-# Afficher le résultat
 print(outliers)
-
-# Afficher les valeurs aberrantes (s'il y en a)
-outliers_data = prixlogement[outliers.any(axis=1)]
-print(outliers_data)
 
 # redéfinition de la base de données
 prixlogement=prixlogement.drop(columns=['Unnamed: 0','date'])
 
+
+"STATISTIQUE DESCRIPTIVE"
+
+
 # statistiques descriptives
 statprixlogement=prixlogement.describe()
 statprixlogement
+
+
+"VISUALISATION GRAPHIQUE DES DONNEES"
+
 
 # visualisation des données
 corrprixlogement = prixlogement.corr()
@@ -100,6 +98,10 @@ for ax, var in zip(axes.flatten(), variables):
 plt.tight_layout()
 plt.show()
 
+
+"NORMALISATION ET STANDARDISATION DES DONNEES AVANT LA MODELISATION ET EVALUATION DES PERFORMANCES PREDICTIVES"
+
+
 # normalisation et standardisation des données avant l'entraînement et l'évaluation de la performance prédictive
 
 # Normalisation
@@ -120,6 +122,10 @@ data_standardized[variables] = standard_scaler.fit_transform(prixlogement[variab
 print("Données standardisées :")
 print(data_standardized.head())
 
+
+"PREPARATION DES DONNEES EN SOUS ENSEMBLE D'ENTRAINEMENT ET DE TEST AVEC DES DONNEES NORMALISEES"
+
+
 # Préparation des données normalisées pour l'entraînement et l'évaluation prédicitve
 x = data_normalized.drop(columns=['indice_prix_logement']) # les prédicteurs
 y= data_normalized['indice_prix_logement'] #variable à prédire
@@ -137,6 +143,10 @@ print(model.summary())
 
 # prédiction
 y_pred = model.predict(x_test_const)
+
+
+"ANALYSE DES RESIDUS APRES ENTRAINEMENT DU MODELE DE REGRESSION LINEAIRE"
+
 
 # residus
 residuals= y_test- y_pred
@@ -156,6 +166,11 @@ print("Statistic Durbin watson",durbin_watson_statistic)
 # test de normalité des résidus
 shapiro_statistic, p_value_shapiro = shapiro(residuals)
 
+
+
+"PREMIERE EVALUATION DE LA PERFORMANCE PREDICTIVE DE NOTRE PROJET"
+
+
 # évaluation de la performance prédictive
 print("RMSE",mean_squared_error(y_test, y_pred))
 print("MAE",mean_absolute_error(y_test, y_pred))
@@ -166,6 +181,10 @@ print("MAE",mean_absolute_error(y_test, y_pred))
 # Définir une fonction pour calculer le RMSE
 def rmse(y_true, y_pred):
     return np.sqrt(mean_squared_error(y_true, y_pred))
+
+
+"AUTRES MODELES TESTER POUR TROUVER LE MODELE QUI EVALUE BIEN LA PERFORMANCE DU MODELE : Dans ce cas, nous avons utilisé autres modèles comme les méthodes régularisées (les regressions ridge et lasso) et l'ensemble learning comme la forêt aléatoire"
+
 
 # Créer un scorer RMSE pour la validation croisée
 rmse_scorer = make_scorer(rmse, greater_is_better=False)
@@ -192,6 +211,9 @@ for name, model in models.items():
     print(f"{name}: RMSE = {score:.4f}")
 
 
+"OPTIMISATION DES HYPERPARAMETRES POUR AMELIORER LA ROBUSTESSE DES MODELES"
+
+
 # Définir le modèle de forêt aléatoire
 model_rf = RandomForestRegressor(random_state=808)
 
@@ -213,6 +235,10 @@ print(grid_search.best_params_)
 # Obtenez le meilleur modèle
 best_model_rf = grid_search.best_estimator_
 print(best_model_rf)
+
+
+"VALIDATION CROISEE APRES OPTIMISATION DES HYPERPARAMETRES"
+
 
 # Définir la validation croisée (par exemple, K-Fold avec K=5)
 kf = KFold(n_splits=5, shuffle=True, random_state=808)
@@ -241,9 +267,9 @@ std_cv_rmse = np.std(cv_results)
 
 print(f"Validation croisée RMSE moyenne : {mean_cv_rmse:.4f} +/- {std_cv_rmse:.4f}")
 
-# Import des bibliothèques nécessaires
-from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import GridSearchCV, KFold
+
+"NOUVELLE MODELISATION AVEC XGBOOS"
+
 
 # Définir les hyperparamètres à rechercher
 params = {
@@ -274,3 +300,18 @@ y_pred = best_xgb_model.predict(x_test_const)
 # Calculer et afficher le RMSE
 rmse = np.sqrt(mean_squared_error(y_test, y_pred))
 print(f"RMSE avec XGBoost : {rmse:.4f}")
+
+# visualisation graphique des données réels et prédites
+# version regplot
+sns.regplot( x=y_test, y= y_pred, color='purple')
+plt.title('prix réel et prévu de logement')
+plt.xlabel('réel')
+plt.ylabel('prédit')
+plt.show()
+
+# version scatterplot
+sns.scatterplot(x=y_test, y= y_pred, color='purple')
+plt.title('prix réel et prévu de logement')
+plt.xlabel('réel')
+plt.ylabel('prédit')
+plt.show()
