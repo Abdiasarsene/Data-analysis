@@ -13,9 +13,7 @@ from statsmodels.stats.stattools import durbin_watson
 from scipy.stats import shapiro
 from sklearn.linear_model import Ridge, Lasso
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import cross_val_score
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import GridSearchCV, KFold
+from sklearn.model_selection import cross_val_score, GridSearchCV, KFold
 import xgboost as xgb
 
 # importation de la base de données
