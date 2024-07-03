@@ -18,7 +18,8 @@ unknowndata #affichage des données du jeu de données
 
 "PREPARATION DE LA BASE DE DONNEES POUR UNE PREDICTION"
 
-unknowndata.info()#résumé sur le dataset
+infodata=unknowndata.info()#résumé sur le dataset
+infodata
 unknowndata = unknowndata.drop(columns=['ID_des entreprises','Type de financement  ']) #suppression de certaines variables inutiles pour notre modelisation
 msno.bar(unknowndata, color='orange')#afficher les valeurs manquantes
 duplicatedata= unknowndata.duplicated().sum()#afficher les doublons
