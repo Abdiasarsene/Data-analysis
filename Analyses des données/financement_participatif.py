@@ -34,12 +34,12 @@ valeurs_aberrantes=unknowndata[outliers.any(axis=1)]
 # affichage des résultats
 print("les doublons sont : ",duplicatedata)
 print("les valeurs aberrantes sont : ")
-print(valeurs_aberrantes)
+valeurs_aberrantes
 
 # suppression des lignes contenant des outliers
 unknowndata= unknowndata.drop(valeurs_aberrantes.index)
 
-"statistique descriptive et graphique de la matrice de corrélation"
+"Statistique descriptive et graphique de la matrice de corrélation"
 stat=unknowndata.describe()
 stat #afficher la statistique
 corree= unknowndata.corr()
