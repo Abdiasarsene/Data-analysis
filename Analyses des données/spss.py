@@ -7,7 +7,7 @@ import statsmodels.api as sm
 from scipy.stats import pearsonr
 from statsmodels.stats.diagnostic import het_breuschpagan
 from scipy.stats import shapiro
-from statsmodels.stats.stattools import durbin_wtason
+from statsmodels.stats.stattools import durbin_watson
 from sklearn.preprocessing import MinMaxScaler
 
 spss=pd.read_excel(r'c:\Users\ARMIDE Informatique\Desktop\20220609 - (GROUP)-1.xlsx')
@@ -97,8 +97,58 @@ for ax, var, color in zip(ax.flat, variables, colors):
 # analyse de corrélation  de pearson
 x= datasoinorma[['MALE', 'AGE_p.6', 'scoreTotalConflit','scoreTotalAnxiety']] # les prédicteurs
 
-y=datasoinorma.scoreTotalImageSoi
+y=datasoinorma['scoreTotalImageSoi'] #la vaiable s
 
 corr, p_value=pearsonr(x,y)
 print(f"Corrélation de Pearson :, coor")
 print(f"P_value ;, p_value")
+
+# Assurez-vous que 'datasoinorma' est un DataFrame
+datasoinorma = pd.DataFrame(datasoinorma)
+
+# Calcul de la matrice de corrélation en utilisant la méthode de Pearson
+corr_matrix = datasoinorma.corr(method='pearson')
+
+# Affichage de la matrice de corrélation
+corr_matrix
+
+# modélisation économétrique
+# analyse de corrélation  de pearson
+x= datasoinorma[['MALE', 'AGE_p.6', 'scoreTotalConflit','scoreTotalAnxiety']] # les prédicteurs
+
+y=datasoinorma['scoreTotalImageSoi'] #la vaiable s
+
+# Division  des données en sous ensemble d'entraînement et de test
+
+from sklearn.model_selection import train_test_split
+
+x_train, x_test, y_train, y_test=train_test_split(x,y, test_size=0.2, random_state=808)
+
+x_train_const =sm.add_constant(x_train)
+model =sm.OLS(y_train,x_train_const).fit()
+print(model.summary())
+
+# Analyse des résidus
+residuals = model.resid
+
+# Test d'homoscédasticité
+lm_statistic, lm_p_value,f_statistic, f_p_value=het_breuschpagan(residuals, x_train_const)
+
+# Affichage des résultats
+print('LM Statistic :',lm_statistic)
+print('LM pvalue :',lm_p_value)
+print('F-statistic :', f_statistic)
+print('F pvalue ;',f_p_value)
+
+# Test d'autocorrélation des résidus
+statistic_durbin=durbin_watson(residuals)
+
+# Affichage des résultats
+print('Durbin-Watson statistic :',statistic_durbin)
+
+# Test de normalité des résidus
+statistic_shapiro, p_value_shapiro=shapiro(residuals)
+
+# Affichages des résultats
+print('Shapiro-Wilk statistic :',statistic_shapiro)
+print('Shapiro-Wilk pvalue :',p_value_shapiro)
