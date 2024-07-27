@@ -95,3 +95,67 @@ reflet['Composite Variable'] = (reflet['Mother-Child Relationship Quality'] + re
 
 # Affichage des premières lignes pour vérifier
 reflet[['Mother-Child Relationship Quality', 'Child Behavior Problems', 'Composite Variable']]
+
+# normalisation des données
+minmaxscaler =MinMaxScaler()
+refletnorma=reflet.copy()
+refletnorma[reflet.columns]=minmaxscaler.fit_transform(reflet[reflet.columns])
+refletnorma
+
+# analyse de corrélation de pearson
+corr_pearson=refletnorma.corr(method= 'pearson')
+
+# analyse de la médiation
+
+"Étape 1 : Vérifiez si X affecte Y (total effect)"
+# Définir les variables
+X = refletnorma[['Maternal Reflective Functioning', 'Prenatal Stress']] # les prédicteurs
+Y = refletnorma['Composite Variable'] #variable cible 
+
+# Ajoutez une constante (intercepte)
+X = sm.add_constant(X)
+
+# Modèle de régression
+model1 = sm.OLS(Y, X).fit()
+print(model1.summary())
+
+"Étape 2 : Vérifiez si X affecte M (path a)"
+# Définir la variable médiatrice
+M = refletnorma['Mother-Child Relationship Quality']
+
+# Ajoutez une constante (intercepte)
+X = sm.add_constant(X)
+
+# Modèle de régression
+model2 = sm.OLS(M, X).fit()
+print(model2.summary())
+
+"Étape 3 : Vérifiez si M affecte Y et si X affecte Y en présence de M (direct effect"
+X = refletnorma[['Maternal Reflective Functioning', 'Prenatal Stress','Mother-Child Relationship Quality']] # les prédicteurs
+Y = refletnorma['Composite Variable'] #variable cible 
+
+# Ajoutez une constante (intercepte)
+X = sm.add_constant(X)
+
+# Modèle de régression
+model3 = sm.OLS(Y, X).fit()
+print(model3.summary())
+
+"Calcul de l'effet indirect"
+from statsmodels.stats.mediation import Mediation
+
+# Définir le modèle de médiation
+mediation_model = Mediation(
+    model1,
+    model2,
+    model3,
+    ['Maternal Reflective Functioning', 'Prenatal Stress'],
+    'Mother-Child Relationship Quality',
+    'Composite Variable'
+)
+
+# Ajuster le modèle de médiation
+mediation_results = mediation_model.fit()
+
+# Afficher les résultats
+print(mediation_results.summary())
