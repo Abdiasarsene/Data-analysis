@@ -55,10 +55,6 @@ sns.heatmap( reflet_corr, annot=True, cmap='coolwarm')
 # visualisation des variables d'étude
 sns.pairplot(reflet, color= 'purple')
 
-# relation entre la variable cible et les prédicteurs
-import matplotlib.pyplot as plt
-import seaborn as sns
-
 # Création des sous-graphiques
 fig, ax = plt.subplots(1, 2, figsize=(14, 5))
 
