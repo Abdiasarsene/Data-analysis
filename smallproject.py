@@ -4,11 +4,11 @@ import missingno as msno
 import seaborn as sns
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
-from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.model_selection import train_test_split, GridSearchCV,cross_val_score
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error, mean_squared_error, r2_score
+from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.linear_model import Lasso, Ridge
+from sklearn.linear_model import Lasso, Ridge,LinearRegression
 
 # Importation de la base de données
 canada = pd.read_excel(r"d:\Projet Informatique\Bases de données\Base Crowdfunding.xlsx")
@@ -16,7 +16,7 @@ canada.tail() #Affichage des 05 dernières lignes
 canadl = canada.select_dtypes(exclude=['object'])
 
 # Aanalyses exploratoires des données
-    # Détection et supression des données manquantes
+# Détection et supression des données manquantes
 missing_data = canadl[canadl.duplicated()]
 if not missing_data.empty:
     print('La base de données contient des données manquantes')
@@ -138,12 +138,6 @@ print(f"Ridge MAPE: {mape_ridge}")
 print(f"Lasso MAE: {mae_lasso}")
 print(f"Lasso MAPE: {mape_lasso}")
 
-# Selection des MAE de chaque modèle : 
-print(f"Ridge MAE: {mae_ridge}")
-print(f"Lasso MAE: {mae_lasso}")
-print(f"Random Forest MAE: {mae_rf}")
-print('LinearRegression MAE:',mean_absolute_error(y_pred,y_test))
-
 # Améliortion de la capacité prédictive du modèle "Forêt aléatoire"
 # Définir les paramètres à tester
 param_grid = {
@@ -205,3 +199,62 @@ plt.xlabel('Prédictions')
 plt.ylabel('Résidus')
 plt.title('Analyse des Résidus')
 plt.show()
+
+# Pas d'optimisation des paramètres mais plutôt une validation croisée avec la régression linéaire
+# Initialisation du modèle
+lr_model = LinearRegression()
+
+# Validation croisée
+cv_scores = cross_val_score(lr_model, x_train_const, y_train, cv=5, scoring='neg_mean_absolute_error')
+
+# Affichage des scores
+print(f"Cross-validated MAE: {-cv_scores.mean()}")
+
+# OPTIMISATION DES HYPERPARAMETRES ET VALIDATION CROISEE AVEC LES METHODES REGULARISEES
+# Définir les paramètres à tester
+param_grid_lasso = {
+    'alpha': [0.01, 0.1, 1, 10, 100]
+}
+
+# Initialisation du modèle
+lasso_model = Lasso(random_state=42)
+
+# Grid Search avec validation croisée
+grid_search_lasso = GridSearchCV(estimator=lasso_model, param_grid=param_grid_lasso, cv=5, n_jobs=-1, verbose=2)
+grid_search_lasso.fit(x_train_const, y_train)
+
+# Meilleurs paramètres
+print(f"Best parameters for Lasso: {grid_search_lasso.best_params_}")
+
+# Prédictions avec le meilleur modèle
+best_lasso_model = grid_search_lasso.best_estimator_
+y_pred_best_lasso = best_lasso_model.predict(x_test_const)
+
+# Évaluation
+mae_best_lasso = mean_absolute_error(y_test, y_pred_best_lasso)
+print(f"Optimized Lasso MAE: {mae_best_lasso}")
+
+from sklearn.linear_model import Ridge
+
+# Définir les paramètres à tester
+param_grid_ridge = {
+    'alpha': [0.01, 0.1, 1, 10, 100]
+}
+
+# Initialisation du modèle
+ridge_model = Ridge(random_state=42)
+
+# Grid Search avec validation croisée
+grid_search_ridge = GridSearchCV(estimator=ridge_model, param_grid=param_grid_ridge, cv=5, n_jobs=-1, verbose=2)
+grid_search_ridge.fit(x_train_const, y_train)
+
+# Meilleurs paramètres
+print(f"Best parameters for Ridge: {grid_search_ridge.best_params_}")
+
+# Prédictions avec le meilleur modèle
+best_ridge_model = grid_search_ridge.best_estimator_
+y_pred_best_ridge = best_ridge_model.predict(x_test_const)
+
+# Évaluation
+mae_best_ridge = mean_absolute_error(y_test, y_pred_best_ridge)
+print(f"Optimized Ridge MAE: {mae_best_ridge}")
