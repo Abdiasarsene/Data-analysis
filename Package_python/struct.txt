@@ -1,0 +1,22 @@
+my_ml_package/
+│
+├── my_ml_package/
+│   ├── __init__.py
+│   ├── model.py
+│   ├── preprocessing.py
+│   ├── utils.py
+│
+├── tests/
+│   ├── test_model.py
+│   ├── test_preprocessing.py
+│
+├── setup.py
+├── README.md
+├── LICENSE
+├── requirements.txt
+
+installation des package 
+pip install -e .
+pip install setuptools wheel
+python setup.py sdist bdist_wheel
+pip install twine
